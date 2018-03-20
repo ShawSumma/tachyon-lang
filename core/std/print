@@ -1,0 +1,3 @@
+p = print
+def print(*args):
+  p(*args)

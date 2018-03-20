@@ -1,0 +1,6 @@
+e = eval
+d = dir
+def eval(x):
+    return e(x)
+def dir(x):
+    return d(x)
