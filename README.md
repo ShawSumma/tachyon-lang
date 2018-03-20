@@ -1,6 +1,7 @@
 # tachyon-lang
 next generation ion
-```/*
+```
+/*
  * hello this is tachyon
  * it is wonderful to be here
  * this is a comment
