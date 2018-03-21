@@ -1,6 +1,9 @@
 e = eval
 d = dir
+t = type
 def eval(x):
     return e(x)
 def dir(x):
     return d(x)
+def type(x):
+    return t(x)

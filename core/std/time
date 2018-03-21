@@ -1,0 +1,2 @@
+from time import sleep as delay
+from time import time as time

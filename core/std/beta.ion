@@ -1,0 +1,3 @@
+time = import('std/benchmark')
+one = 1
+f(x) = x

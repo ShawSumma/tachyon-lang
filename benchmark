@@ -1,0 +1,3 @@
+#! /bin/sh
+echo 'cpython';./tachyon-cpython ion/main.ion
+echo 'pypy'; ./tachyon-pypy ion/main.ion
