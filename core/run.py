@@ -12,7 +12,6 @@ from types import ModuleType
 def run_fn(ts,perams):
     global fopt
     global vs
-    global optimize
     if not callable(ts):
         tup = tuple(perams)
         best = None
@@ -90,7 +89,6 @@ def replace(tree,data):
 def run_line(tree):
     global vs
     global fopt
-    global optimize
     #print(list(vs))
     #print(tree)
     if isinstance(tree,list):
@@ -358,11 +356,6 @@ def run_line(tree):
             return {'data':ret,'flags':[]}
         elif name == 'exit':
             exit()
-        elif name == 'optimize':
-            fopt = {}
-            ret = run_line(tree['perams'][0])['data']
-            optimize = ret
-            return {'data':ret,'flags':[]}
         elif name == 'vars':
             if len(tree['perams']) > 0:
                 ret = vs[run_line(tree['perams'][0])['data']]
@@ -397,8 +390,9 @@ def run_line(tree):
         elif name == 'fp':
             return {'data':fopt,'flags':[]}
         elif name == 'callable':
-            ret = run(tree['perams'])
-            ret = isinstance(ret,dict) and ret['type'] == 'fn'
+            ft = run(tree['perams'])
+            ret = isinstance(ft,dict) and ft['type'] == 'fn'
+            if ret == False and callable(ft): ret = True
             return {
                 'data' : ret['data'][0],
                 'flags' : ['return']
@@ -443,10 +437,8 @@ def run(tree):
     return {'data':None,'flags':[]}
 def init():
     global vs
-    global optimize
     global fopt
     vs = {'true':1,'false':0}
-    optimize = 0
     fopt = {}
 def end():
     pass
