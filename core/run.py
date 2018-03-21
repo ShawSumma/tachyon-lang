@@ -12,18 +12,28 @@ from types import ModuleType
 def run_fn(ts,perams):
     global fopt
     global vs
+    if isinstance(perams[-1],dict) and perams[-1]['type'] == 'unpack':
+        perams = perams[:-1]+perams[-1]['data']
+    if not isinstance(perams,list) and not isinstance(perams,tuple):
+        perams = (perams,)
     if not callable(ts):
         tup = tuple(perams)
         best = None
         bestvar = None
         mat_peram = None
+        unpack = None
+        upnum = 0
+        bestpack = [0,0]
         rec = -1
         for fn in ts['data']:
             fn,var = fn['fn'],fn['vs']
             per = fn[0]
             bet = {0:0,1:0,2:0}
             mp = {}
-            if len(per) == len(perams):
+            if isinstance(per[-1],dict) and per[-1]['type'] == 'oper':
+                unpack = per[-1]['post']['data']
+                upnum = len(perams)-len(per)
+            if len(per)+upnum == len(perams):
                 for pl,i in enumerate(per):
                     rp = run_peram(i)
                     if rp[1] == 1:
@@ -38,15 +48,21 @@ def run_fn(ts,perams):
                         bestvar = var
                         mat_peram = mp
                         rec = bet[2]
+                        bestpack = [unpack,upnum]
         vx = vs
-        if mat_peram == None:
+        vs = {}
+        gk = True
+        if bestpack[0] != None:
+            vs[bestpack[0]] = perams[-bestpack[1]-1:]
+            gk = False
+        elif mat_peram == None:
             print('canidate error')
             exit()
-        vs = {}#vx
         for i in bestvar:
             vs[i] = bestvar[i]
-        for i in mat_peram:
-            vs[i] = mat_peram[i]
+        if gk:
+            for i in mat_peram:
+                vs[i] = mat_peram[i]
         ret = run_line(best)['data']
         vs = vx
         return ret
@@ -55,7 +71,11 @@ def run_fn(ts,perams):
 def run_peram(peram):
     if peram['type'] == 'name':
         return [peram['data'],1]
-    return [run_line(peram)['data'],0]
+    if peram['type'] == 'oper':
+        if peram['oper'] == '*':
+            return [peram['post']['data'],1]
+    elif peram['type'] == 'int':
+        return [run_line(peram)['data'],0]
 def rewrap(tree,data):
     view.view(tree)
     return replace(tree,data)
@@ -158,6 +178,7 @@ def run_line(tree):
         else:
             errors.e_var_miss(tree['data'],vs)
     if tree['type'] == 'oper':
+        tree['oper'] = tree['oper'] if 'oper' in tree else tree['data']
         if tree['oper'] in ['.']:
             a = run_line(tree['pre'])['data']
             if tree['post']['type'] == 'fn':
@@ -184,16 +205,125 @@ def run_line(tree):
                         ret = a.replace(*pers)
                     elif b == 'sort':
                         ret = list(a)
-                        ret.sort()
+                        if pers == []:
+                            ret.sort()
+                        else:
+                            p = run_line(pers[0])
+                            ret.sort(run_fn(p))
                         ret = ''.join(ret)
                 elif isinstance(a,list):
                     if b == 'sort':
-                        ret = a
-                        ret.sort()
+                        ret = list(a)
+                        if pers == []:
+                            ret.sort()
+                        else:
+                            f = pers[0]
+                            ret.sort(key=lambda p: run_fn(f,p))
                     elif b == 'map':
                         ret = [run_fn(pers[0],[i]) for i in a]
-                    elif b == 'sum':
-                        ret = sum(a)
+                    elif b == 'op':
+                        op = pers[0]
+                        if op == '+':
+                            ret = a[0]
+                            for i in a[1:]:
+                                ret += i
+                        elif op == '-':
+                            ret = a[0]
+                            for i in a[1:]:
+                                ret -= i
+                        elif op == '*':
+                            ret = a[0]
+                            for i in a[1:]:
+                                ret *= i
+                        elif op == '/':
+                            ret = a[0]
+                            for i in a[1:]:
+                                ret /= i
+                        elif op == '%':
+                            ret = a[0]
+                            for i in a[1:]:
+                                ret %= i
+                        elif op == '**':
+                            ret = a[0]
+                            for i in a[1:]:
+                                ret = ret**i
+                        elif op == '^':
+                            ret = a[0]
+                            for i in a[1:]:
+                                ret = ret**i
+                        elif op == '==':
+                            ret = a[0]
+                            for i in a[1:]:
+                                if i == ret:
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                            ret = int(ret)
+                        elif op == '!=':
+                            ret = a[0]
+                            sl = [a[0]]
+                            for i in a[1:]:
+                                if i not in sl:
+                                    sl.append(i)
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                            ret = int(ret)
+                        elif op == '>':
+                            ret = bool(a[0])
+                            for i in a[1:]:
+                                if i < ret:
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                            ret = int(ret)
+                        elif op == '<':
+                            ret = bool(a[0])
+                            for i in a[1:]:
+                                if i > ret:
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                        elif op == '>=':
+                            ret = bool(a[0])
+                            for i in a[1:]:
+                                if i <= ret:
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                            ret = int(ret)
+                        elif op == '<=':
+                            ret = bool(a[0])
+                            for i in a[1:]:
+                                if i >= ret:
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                            ret = int(ret)
+                        elif op == '&&':
+                            ret = bool(a[0])
+                            for i in a[1:]:
+                                if i and ret:
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                            ret = int(ret)
+                        elif op == '||':
+                            ret = bool(a[0])
+                            for i in a[1:]:
+                                if i or ret:
+                                    continue
+                                else:
+                                    ret = False
+                                    break
+                            ret = int(ret)
                     elif b == 'get':
                         ret = a
                         while len(pers) > 0:
@@ -215,7 +345,6 @@ def run_line(tree):
                     if a['type'] == 'module':
                         ret = a['data'][b]
                         return {'data':ret,'flags':['return']}
-                print(b)
         if tree['oper'] in ['!','!!']:
             if tree['oper'] == '!':
                 if tree['pre']['data'] not in vs:
@@ -233,14 +362,16 @@ def run_line(tree):
                 repd = replace(treedata,mapdata)
                 ret = run_line(repd)['data']
                 return {'data':ret,'flags':['return']}
-        if tree['pre'] != None:
+        if 'pre' in tree and tree['pre'] != None:
             a = run_line(tree['pre'])['data']
         else:
             a = None
-        if tree['post'] != None:
+        if 'post' in tree and tree['post'] != None:
             b = run_line(tree['post'])['data']
         else:
             b = None
+        if a == None and b == None:
+            return  {'data':tree['oper'],'flags':['return']}
         o = None
         if tree['oper'] == '+':
             if isinstance(a,dict):
@@ -254,7 +385,10 @@ def run_line(tree):
             else:
                 o = -b
         elif tree['oper'] == '*':
-            o = a*b
+            if a != None:
+                o = a*b
+            else:
+                return {'data':{'data':b,'type':'unpack'},'flags':['return']}
         elif tree['oper'] == '/':
             o = a/b
         elif tree['oper'] == '%':
@@ -438,6 +572,7 @@ def run(tree):
 def init():
     global vs
     global fopt
+    global ops
     vs = {'true':1,'false':0}
     fopt = {}
 def end():

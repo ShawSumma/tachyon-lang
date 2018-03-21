@@ -1,3 +1,0 @@
-p = print
-def type(*args):
-    p(*args)

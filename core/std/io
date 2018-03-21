@@ -1,0 +1,5 @@
+p = print
+def println(*args):
+    p(*args)
+def print(*args):
+    p(*args,end='')

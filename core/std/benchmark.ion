@@ -1,7 +1,7 @@
 time(fn)={
-  inner(someInt)={
+  inner(*someInt)={
     time = uxtime()
-    ret = fn(someInt)
+    ret = fn(*someInt)
     print(uxtime()-time)
     ret
   }
