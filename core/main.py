@@ -3,7 +3,6 @@ import tree
 import run
 import sys
 
-
 def run_code(code):
     toks = lex.make(code)
     code_tree = tree.tree(toks)

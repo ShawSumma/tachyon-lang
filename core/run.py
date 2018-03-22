@@ -191,6 +191,10 @@ def run_line(tree):
         tree['oper'] = tree['oper'] if 'oper' in tree else tree['data']
         if tree['oper'] in ['.']:
             a = run_line(tree['pre'])['data']
+            if tree['post']['type'] != 'fn':
+                b = tree['post']['data']
+                ret = eval('a.' + b)
+                return {'data':ret,'flags':[]}
             if tree['post']['type'] == 'fn':
                 b = tree['post']['fn']['data']
                 pers = [run_line(i)['data'] for i in tree['post']['perams']]
@@ -355,6 +359,25 @@ def run_line(tree):
                     if a['type'] == 'module':
                         ret = a['data'][b]
                         return {'data': ret, 'flags': ['return']}
+        if tree['oper'] in ['->','<-']:
+            if tree['oper'] == '->':
+                pre = tree['post']
+                post = tree['pre']
+            else:
+                pre = tree['pre']
+                post = tree['post']
+            post = run_line(post)['data']
+            pre = run_line(pre)['data']
+            if isinstance(post,dict) and post['type'] == 'unpack':
+                args = post['data']
+            else:
+                args = [post]
+            if callable(pre):
+                result = run_fn(pre,args)
+            elif isinstance(pre,dict):
+                if pre['type'] == 'fn':
+                    result = run_fn(pre,args)
+            return {'data': result, 'flags': []}
         if tree['oper'] in ['!', '!!']:
             if tree['oper'] == '!':
                 if tree['pre'] is None:

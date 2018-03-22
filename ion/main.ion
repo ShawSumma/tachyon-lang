@@ -1,1 +1,5 @@
-print((1,,1,,1,,))
+print = extern('std/io').println
+twice(x) = x*2
+
+myVar = twice <- twice <- 3
+print(myVar)

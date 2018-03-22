@@ -90,6 +90,8 @@ def tree_line(code):
         finds += [['<>'], ['<', '>', '<=', '>=']]
         # equality part 2
         finds += [['!=', '=='], ['&&'], ['||']]
+        # list push and pop
+        finds += [['->','<-']]
         # set
         finds += [['-=', '+=', '/=', '**=', '*=', '=', '?=']]
         # its backwards
@@ -108,7 +110,7 @@ def tree_line(code):
         if oper == 'error':
             errors.e_unk_oper(datas[types.index('oper')])
         # list of backwards operators
-        negitive = ['.']
+        negitive = ['.','->']
         if oper not in negitive:
             oper_ind = datas.index(oper)
         else:

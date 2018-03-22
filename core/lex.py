@@ -84,11 +84,23 @@ def make(code):
             })
             code = code[m_int.span()[1]:]
         elif m_oper is not None:
-            tokens.append({
-                'type': 'oper',
-                'data': code[:m_oper.span()[1]],
-                'line': line,
-            })
+            if (code[m_oper.span()[1]-1] not in ['+','-','*'] or code[m_oper.span()[1]-2] in ['<','>'])or m_oper.span()[1] < 2:
+                tokens.append({
+                    'type': 'oper',
+                    'data': code[:m_oper.span()[1]],
+                    'line': line,
+                })
+            else:
+                tokens.append({
+                    'type': 'oper',
+                    'data': code[:m_oper.span()[1]-1],
+                    'line': line,
+                })
+                tokens.append({
+                    'type': 'oper',
+                    'data': code[m_oper.span()[1]-1],
+                    'line': line,
+                })
             code = code[m_oper.span()[1]:]
         elif d_paren:
             tokens.append({

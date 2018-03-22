@@ -1,4 +1,6 @@
+import sys
 p = print
+stdout = lambda x: sys.stdout.write(str(x))
 def println(*args):
     p(*args)
 def print(*args):
