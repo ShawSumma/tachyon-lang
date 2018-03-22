@@ -1,4 +1,1 @@
-time = import('std/benchmark').time
-fac(n) = {1:n}.op(*)
-fac = time(fac)
-_=fac(4)
+print((1,,1,,1,,))

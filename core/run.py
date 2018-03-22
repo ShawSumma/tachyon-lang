@@ -1,12 +1,9 @@
+# comment me
 import time
 import view
 import errors
 import lex
-import view
 import tree as tmake
-import time
-import math
-import operator
 import extern
 import inspect
 from types import ModuleType
@@ -20,7 +17,6 @@ def run_fn(ts, perams):
     if not isinstance(perams, list) and not isinstance(perams, tuple):
         perams = (perams,)
     if not callable(ts):
-        tup = tuple(perams)
         best = None
         bestvar = None
         mat_peram = None
@@ -55,10 +51,10 @@ def run_fn(ts, perams):
         vx = vs
         vs = {}
         gk = True
-        if bestpack[0] != None:
+        if bestpack[0] is not None:
             vs[bestpack[0]] = perams[-bestpack[1] - 1:]
             gk = False
-        elif mat_peram == None:
+        elif mat_peram is None:
             print('canidate error')
             exit()
         for i in bestvar:
@@ -154,7 +150,7 @@ def run_line(tree):
         if tree['pre']['type'] == 'fn':
             perams = [i for i in tree['pre']['perams']]
             name = tree['pre']['fn']['data']
-            if not name in vs:
+            if name not in vs:
                 vs[name] = {'type': 'fn', 'data': []}
             ret = {
                 'fn': [perams, tree['post']],
@@ -197,14 +193,14 @@ def run_line(tree):
             a = run_line(tree['pre'])['data']
             if tree['post']['type'] == 'fn':
                 b = tree['post']['fn']['data']
-                btype = 'fn'
                 pers = [run_line(i)['data'] for i in tree['post']['perams']]
                 ret = None
                 flags = False
                 if isinstance(a, dict):
                     if a['type'] == 'fn':
                         ret = run_fn(b, pers)
-                        return {'data': ret, 'flags': ['return'] if flags == 0 else []}
+                        flags = ['return'] if flags == 0 else []
+                        return {'data': ret, 'flags': flags}
                     if a['type'] == 'module':
                         ret = run_fn(a['data'][b], pers)
                         return {'data': ret, 'flags': ['return']}
@@ -361,7 +357,7 @@ def run_line(tree):
                         return {'data': ret, 'flags': ['return']}
         if tree['oper'] in ['!', '!!']:
             if tree['oper'] == '!':
-                if tree['pre'] == None:
+                if tree['pre'] is None:
                     ret = run_line(tree['post'])['data']
                     return {'data': int(not ret), 'flags': ['return']}
                 if tree['pre']['data'] not in vs:
@@ -379,15 +375,15 @@ def run_line(tree):
                 repd = replace(treedata, mapdata)
                 ret = run_line(repd)['data']
                 return {'data': ret, 'flags': ['return']}
-        if 'pre' in tree and tree['pre'] != None:
+        if 'pre' in tree and tree['pre'] is not None:
             a = run_line(tree['pre'])['data']
         else:
             a = None
-        if 'post' in tree and tree['post'] != None:
+        if 'post' in tree and tree['post'] is not None:
             b = run_line(tree['post'])['data']
         else:
             b = None
-        if a == None and b == None:
+        if a is None and b is None:
             return {'data': tree['oper'], 'flags': ['return']}
         o = None
         if tree['oper'] == '+':
@@ -397,15 +393,16 @@ def run_line(tree):
             else:
                 o = a + b
         elif tree['oper'] == '-':
-            if a != None:
+            if a is not None:
                 o = a - b
             else:
                 o = -b
         elif tree['oper'] == '*':
-            if a != None:
+            if a is not None:
                 o = a * b
             else:
-                return {'data': {'data': b, 'type': 'unpack'}, 'flags': ['return']}
+                ret = {'data': b, 'type': 'unpack'}
+                return {'data': ret, 'flags': ['return']}
         elif tree['oper'] == '/':
             o = a / b
         elif tree['oper'] == '%':
@@ -516,15 +513,23 @@ def run_line(tree):
                 ret = list(vs)
             return {'data': ret, 'flags': ['return']}
         elif name == 'int':
-            return {'data': int(run_line(tree['perams'][0])['data']), 'flags': ['return']}
+            ret = int(run_line(tree['perams'][0])['data'])
+            return {'data': ret, 'flags': ['return']}
         elif name == 'read':
-            return {'data': open(run_line(tree['perams'][0])['data']).read(), 'flags': ['return']}
+            ret = open(run_line(tree['perams'][0])['data']).read()
+            return {'data': ret, 'flags': ['return']}
         elif name == 'float':
-            return {'data': float(run_line(tree['perams'][0])['data']), 'flags': ['return']}
+            ret = float(run_line(tree['perams'][0])['data'])
+            return {'data': ret, 'flags': ['return']}
         elif name == 'str':
-            return {'data': str(run_line(tree['perams'][0])['data']), 'flags': ['return']}
+            ret = str(run_line(tree['perams'][0])['data'])
+            return {'data': ret, 'flags': ['return']}
         elif name == 'input':
-            return {'data': input(str(run_line(tree['perams'][0])['data'])) if len(tree['perams']) > 0 else input(), 'flags': ['return']}
+            if len(tree['perams']) > 0:
+                ret = input(str(run_line(tree['perams'][0])['data']))
+            else:
+                ret = input()
+            return {'data': ret, 'flags': ['return']}
         elif name == 'import':
             pat = run_line(tree['perams'][0])['data']
             path = extern.tach(pat)
@@ -545,7 +550,7 @@ def run_line(tree):
         elif name == 'callable':
             ft = run(tree['perams'])
             ret = isinstance(ft, dict) and ft['type'] == 'fn'
-            if ret == False and callable(ft):
+            if ret is False and callable(ft):
                 ret = True
             return {
                 'data': ret['data'][0],

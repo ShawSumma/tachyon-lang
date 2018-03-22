@@ -2,7 +2,7 @@ def view(v, di=None, dep=0):
     depth = dep
     w = ' ' * depth
     print(w, end='')
-    if di != None:
+    if di is not None:
         print(str(di) + ' : ', end='')
         w += ' ' * (len(str(di)) + 3)
     if isinstance(v, list) or isinstance(v, tuple):

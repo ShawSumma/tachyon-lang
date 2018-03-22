@@ -1,23 +1,35 @@
+# std regex
 import re
+# define some regexes
+# it ignores what is in the next but newlines are counted
 t_ignore = ' \n\t'
+# numerics
 t_int = re.compile(r'[0-9]+')
 t_float = re.compile(r'[0-9]+\.[0-9]+')
+# special charactors braces
 t_paren = '()'
 t_curly = '{}'
 t_list = '[]'
+# current and beta operaors
 t_oper = re.compile(r'[\/\~\!\@\#\$\%\^\&\*\=\+\-\<\>\?\|\\\:\.]+')
 t_comma = ','
+# what to see  as a newline, only counts \n for debug
 t_newline = ';\n'
-#t_emoji = re.compile(r'[\U00010000-\U0010ffff]+', flags=re.UNICODE)
+
+# the lexer, code is the string to be passed in
 
 
 def make(code):
+    # replace newline and backslash to empty
     while '\\\n' in code:
         code = code.replace('\\\n', '')
     tokens = []
     line = 1
+    # loop until broken
     while True:
+        # deal with whitespace
         while len(code) > 0 and code[0] in t_ignore:
+            # count newlines
             if code[0] == '\n':
                 tokens.append({
                     'type': 'newline',
@@ -26,8 +38,10 @@ def make(code):
                 })
                 line += 1
             code = code[1:]
+        # return if nothing failed
         if len(code) == 0:
             return tokens
+        # match with regex
         m_int = t_int.match(code)
         m_float = t_float.match(code)
         m_oper = t_oper.match(code)
@@ -36,6 +50,7 @@ def make(code):
         d_list = code[0] in t_list
         d_comma = code[0] in t_comma
         d_newline = code[0] in t_newline
+        # quotes are special
         if code[0] in '\"\'':
             mat = code[0]
             code = code[1:]
@@ -54,21 +69,21 @@ def make(code):
             while code[:2] != '*/':
                 code = code[1:]
             code = code[2:]
-        elif m_float != None:
+        elif m_float is not None:
             tokens.append({
                 'type': 'float',
                 'data': code[:m_float.span()[1]],
                 'line': line,
             })
             code = code[m_float.span()[1]:]
-        elif m_int != None:
+        elif m_int is not None:
             tokens.append({
                 'type': 'int',
                 'data': code[:m_int.span()[1]],
                 'line': line,
             })
             code = code[m_int.span()[1]:]
-        elif m_oper != None:
+        elif m_oper is not None:
             tokens.append({
                 'type': 'oper',
                 'data': code[:m_oper.span()[1]],
@@ -111,6 +126,7 @@ def make(code):
             })
             code = code[1:]
         else:
+            # handles emoji
             r = ''
             while len(code) > 1:
                 r += code[0]
@@ -119,8 +135,9 @@ def make(code):
                 m_float = t_float.match(code)
                 m_oper = t_oper.match(code)
                 mat = [m_int, m_float, m_oper]
-                mat = max(map(lambda x: x != None, mat)) == 1
-                lis = t_paren + t_curly + t_list + t_comma + t_newline + t_ignore
+                mat = max(map(lambda x: x is not None, mat)) == 1
+                lis = t_paren + t_curly + t_list
+                lis += t_comma + t_newline + t_ignore
                 imat = code[0] in lis
                 # print(imat,code[0],lis)
                 if mat or imat:
@@ -130,4 +147,3 @@ def make(code):
                 'data': r,
                 'line': line,
             })
-            #code = code[1:]
