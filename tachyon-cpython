@@ -1,2 +1,2 @@
 #! /bin/sh
-python3.6 core/main.py $1
+python3.6 -B core/main.py $1

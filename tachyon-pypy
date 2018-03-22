@@ -1,2 +1,0 @@
-#! /bin/sh
-pypy3 core/main.py $1

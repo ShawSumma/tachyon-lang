@@ -1,5 +1,7 @@
 import errors
-def pair(x,chs,depth=0):
+
+
+def pair(x, chs, depth=0):
     hold = {}
     dep = 0
     pl = 0

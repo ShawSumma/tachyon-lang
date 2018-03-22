@@ -1,12 +1,14 @@
 import pair
 import view
 import errors
+
+
 def tree_paren(code):
-    datas =[i['data'] for i in code]
+    datas = [i['data'] for i in code]
     pairs = {
-        'paren':pair.pair(datas,['(',')']),
-        'curly':pair.pair(datas,['{','}']),
-        'square':pair.pair(datas,['[',']']),
+        'paren': pair.pair(datas, ['(', ')']),
+        'curly': pair.pair(datas, ['{', '}']),
+        'square': pair.pair(datas, ['[', ']']),
     }
     pl = 0
     ret = [[]]
@@ -14,16 +16,16 @@ def tree_paren(code):
         if pl in pairs['paren']:
             jmp = pairs['paren'][pl]
             rap = {
-                'type' : 'tuple',
-                'data' : tree_paren(code[pl+1:jmp]),
+                'type': 'tuple',
+                'data': tree_paren(code[pl + 1:jmp]),
             }
             ret[-1].append(rap)
             pl = jmp
         elif pl in pairs['curly']:
             jmp = pairs['curly'][pl]
             rap = {
-                'type' : 'code',
-                'data' : tree(code[pl+1:jmp]),
+                'type': 'code',
+                'data': tree(code[pl + 1:jmp]),
             }
             ret[-1].append(rap)
             pl = jmp
@@ -38,26 +40,29 @@ def tree_paren(code):
     for i in ret:
         recal.append(tree_line(i))
     return recal
+
+
 def tree_line(code):
     if len(code) == 0:
         return None
-    datas =[i['data'] for i in code]
-    types =[i['type'] for i in code]
-    if datas[0] in ['if','else','elif','while','do','loop']:
+    datas = [i['data'] for i in code]
+    types = [i['type'] for i in code]
+    if datas[0] in ['if', 'else', 'elif', 'while', 'do', 'loop']:
         ret = {
-            'type' : 'flow',
-            'flow' : datas[0],
-            'condition' : tree_line(code[1:-1]),
-            'then' : code[-1]
+            'type': 'flow',
+            'flow': datas[0],
+            'condition': tree_line(code[1:-1]),
+            'then': code[-1]
         }
         if datas[0] == 'loop':
-            ret['condition'] = {'type':'int','data':'1'}
+            ret['condition'] = {'type': 'int', 'data': '1'}
         return ret
     if len(code) == 1:
-        return {'type':code[0]['type'],'data':code[0]['data']}
+        return {'type': code[0]['type'], 'data': code[0]['data']}
     if 'oper' in types:
-        #view.view(datas)
-        finds = [['error'],['.'],['!','!!'],[':'],['**','^'],['*','/','%'],['+','-'],['<>'],['<','>','<=','>='],['!=','=='],['&&'],['||'],['-=','+=','/=','**=','*=','=','?=']]
+        # view.view(datas)
+        finds = [['error'], ['.'], ['!', '!!'], [':'], ['**', '^'], ['*', '/', '%'], ['+', '-'], ['<>'],
+                 ['<', '>', '<=', '>='], ['!=', '=='], ['&&'], ['||'], ['-=', '+=', '/=', '**=', '*=', '=', '?=']]
         finds = finds[::-1]
         ob = False
         for order in finds:
@@ -73,32 +78,34 @@ def tree_line(code):
         if oper not in negitive:
             oper_ind = datas.index(oper)
         else:
-            oper_ind = len(datas)-1-datas[::-1].index(oper)
-        if oper in ['-=','+=','/=','**=','*=','=','?=']:
+            oper_ind = len(datas) - 1 - datas[::-1].index(oper)
+        if oper in ['-=', '+=', '/=', '**=', '*=', '=', '?=']:
             return {
                 'type': 'set',
                 'set': datas[oper_ind],
                 'pre': tree_line(code[:oper_ind]),
-                'post': tree_line(code[oper_ind+1:])
+                'post': tree_line(code[oper_ind + 1:])
             }
         return {
             'type': 'oper',
             'oper': oper,
-            'pre' : tree_line(code[:oper_ind]),
-            'post' : tree_line(code[oper_ind+1:])
+            'pre': tree_line(code[:oper_ind]),
+            'post': tree_line(code[oper_ind + 1:])
         }
     if len(code) > 1 and code[-1]['type'] == 'tuple':
         return {
             'type': 'fn',
             'fn': tree_line(code[:-1]),
-            'perams':code[-1]['data']
+            'perams': code[-1]['data']
         }
-def tree(code,typ='newline'):
-    datas =[i['data'] for i in code]
+
+
+def tree(code, typ='newline'):
+    datas = [i['data'] for i in code]
     pairs = {
-        'paren':pair.pair(datas,['(',')']),
-        'curly':pair.pair(datas,['{','}']),
-        'square':pair.pair(datas,['[',']']),
+        'paren': pair.pair(datas, ['(', ')']),
+        'curly': pair.pair(datas, ['{', '}']),
+        'square': pair.pair(datas, ['[', ']']),
     }
     pl = 0
     ret = [[]]
@@ -106,16 +113,16 @@ def tree(code,typ='newline'):
         if pl in pairs['paren']:
             jmp = pairs['paren'][pl]
             rap = {
-                'type' : 'tuple',
-                'data' : tree_paren(code[pl+1:jmp]),
+                'type': 'tuple',
+                'data': tree_paren(code[pl + 1:jmp]),
             }
             ret[-1].append(rap)
             pl = jmp
         elif pl in pairs['curly']:
             jmp = pairs['curly'][pl]
             rap = {
-                'type' : 'code',
-                'data' : tree(code[pl+1:jmp]),
+                'type': 'code',
+                'data': tree(code[pl + 1:jmp]),
             }
             ret[-1].append(rap)
             pl = jmp
@@ -128,7 +135,7 @@ def tree(code,typ='newline'):
         del ret[ret.index([])]
     recal = []
     for i in ret:
-        #print(i)
-        #print(i)
+        # print(i)
+        # print(i)
         recal.append(tree_line(i))
     return recal
