@@ -1,5 +1,2 @@
-print = extern('std/io').println
-twice(x) = x*2
-
-myVar = twice <- twice <- 3
-print(myVar)
+f(x)={1..x}.op(*)
+print(-10)

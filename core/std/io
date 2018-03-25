@@ -1,5 +1,7 @@
 import sys
 p = print
+def read(x):
+    return open(x).read()
 stdout = lambda x: sys.stdout.write(str(x))
 def println(*args):
     p(*args)

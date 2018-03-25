@@ -1,6 +1,5 @@
 # std regex
 import re
-# define some regexes
 # it ignores what is in the next but newlines are counted
 t_ignore = ' \n\t'
 # numerics
@@ -84,7 +83,10 @@ def make(code):
             })
             code = code[m_int.span()[1]:]
         elif m_oper is not None:
-            if (code[m_oper.span()[1]-1] not in ['+','-','*'] or code[m_oper.span()[1]-2] in ['<','>'])or m_oper.span()[1] < 2:
+            c1 = code[m_oper.span()[1] - 2] in ['<', '>']
+            c2  =m_oper.span()[1] < 2
+            c3 = code[m_oper.span()[1] - 1] not in ['+', '-', '*']
+            if c1 or c2 or c3:
                 tokens.append({
                     'type': 'oper',
                     'data': code[:m_oper.span()[1]],
@@ -93,61 +95,61 @@ def make(code):
             else:
                 tokens.append({
                     'type': 'oper',
-                    'data': code[:m_oper.span()[1]-1],
+                    'data': code[:m_oper.span()[1] - 1],
                     'line': line,
                 })
                 tokens.append({
                     'type': 'oper',
-                    'data': code[m_oper.span()[1]-1],
+                    'data': code[m_oper.span()[1] - 1],
                     'line': line,
                 })
-            code = code[m_oper.span()[1]:]
+            code=code[m_oper.span()[1]:]
         elif d_paren:
             tokens.append({
                 'type': 'oper',
                 'data': code[:1],
                 'line': line,
             })
-            code = code[1:]
+            code=code[1:]
         elif d_curly:
             tokens.append({
                 'type': 'curly',
                 'data': code[:1],
                 'line': line,
             })
-            code = code[1:]
+            code=code[1:]
         elif d_list:
             tokens.append({
                 'type': 'listop',
                 'data': code[:1],
                 'line': line,
             })
-            code = code[1:]
+            code=code[1:]
         elif d_comma:
             tokens.append({
                 'type': 'comma',
                 'data': code[:1],
                 'line': line,
             })
-            code = code[1:]
+            code=code[1:]
         elif d_newline:
             tokens.append({
                 'type': 'newline',
                 'data': code[:1],
                 'line': line,
             })
-            code = code[1:]
+            code=code[1:]
         else:
             # handles emoji
-            r = ''
-            while len(code) > 1:
+            r=''
+            while len(code) >= 1:
                 r += code[0]
-                code = code[1:]
-                m_int = None  # t_int.match(code)
-                m_float = t_float.match(code)
-                m_oper = t_oper.match(code)
-                mat = [m_int, m_float, m_oper]
-                mat = max(map(lambda x: x is not None, mat)) == 1
+                code=code[1:]
+                m_int=None  # t_int.match(code)
+                m_float=t_float.match(code)
+                m_oper=t_oper.match(code)
+                mat=[m_int, m_float, m_oper]
+                mat=max(map(lambda x: x is not None, mat)) == 1
                 lis = t_paren + t_curly + t_list
                 lis += t_comma + t_newline + t_ignore
                 imat = code[0] in lis

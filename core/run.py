@@ -193,8 +193,11 @@ def run_line(tree):
             a = run_line(tree['pre'])['data']
             if tree['post']['type'] != 'fn':
                 b = tree['post']['data']
-                ret = eval('a.' + b)
-                return {'data':ret,'flags':[]}
+                if isinstance(a, dict):
+                    ret = a['data'][b]
+                else:
+                    ret = eval('a.' + b)
+                return {'data': ret, 'flags': []}
             if tree['post']['type'] == 'fn':
                 b = tree['post']['fn']['data']
                 pers = [run_line(i)['data'] for i in tree['post']['perams']]
@@ -359,7 +362,7 @@ def run_line(tree):
                     if a['type'] == 'module':
                         ret = a['data'][b]
                         return {'data': ret, 'flags': ['return']}
-        if tree['oper'] in ['->','<-']:
+        if tree['oper'] in ['->', '<-']:
             if tree['oper'] == '->':
                 pre = tree['post']
                 post = tree['pre']
@@ -368,15 +371,15 @@ def run_line(tree):
                 post = tree['post']
             post = run_line(post)['data']
             pre = run_line(pre)['data']
-            if isinstance(post,dict) and post['type'] == 'unpack':
+            if isinstance(post, dict) and post['type'] == 'unpack':
                 args = post['data']
             else:
                 args = [post]
             if callable(pre):
-                result = run_fn(pre,args)
-            elif isinstance(pre,dict):
+                result = run_fn(pre, args)
+            elif isinstance(pre, dict):
                 if pre['type'] == 'fn':
-                    result = run_fn(pre,args)
+                    result = run_fn(pre, args)
             return {'data': result, 'flags': []}
         if tree['oper'] in ['!', '!!']:
             if tree['oper'] == '!':
@@ -450,8 +453,13 @@ def run_line(tree):
             o = a and b
         elif tree['oper'] == '||':
             o = a or b
-        elif tree['oper'] == ':':
-            o = list(range(a, b))
+        elif tree['oper'] == '..':
+            if a < b:
+                o = list(range(a, b))
+            else:
+                o = list(range(b, a))
+        elif tree['oper'] == '~':
+            return {'data':b,'flags':[]}
         if isinstance(o, bool):
             o = int(o)
         return {'data': o, 'flags': ['return']}
@@ -518,7 +526,7 @@ def run_line(tree):
                 toks = lex.make(code)
                 code_tree = tmake.tree(toks)
                 ret = run(code_tree)['data']
-            return {'data': ret, 'flags': ['return']}
+            return {'data': ret['data'], 'flags': ['return']}
         elif name == 'exec':
             ret = None
             for i in tree['perams']:

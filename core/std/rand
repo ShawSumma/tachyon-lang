@@ -1,5 +1,6 @@
-from random import randrange as rangeFloat
+from random import randrange as float
 from random import choice as pick
 from random import randint as range
+from random import random
 from random import seed
 from random import shuffle

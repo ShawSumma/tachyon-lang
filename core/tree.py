@@ -83,7 +83,7 @@ def tree_line(code):
     if 'oper' in types:
         finds = []
         # error and listop
-        finds += [['error'], ['.'], ['!', '!!'], [':']]
+        finds += [['error'], ['.'], ['!', '!!'], ['..']]
         # common math
         finds += [['**', '^'], ['*', '/', '%'], ['+', '-']]
         #<> is in, not implemneted fully, equality part 1
@@ -91,9 +91,11 @@ def tree_line(code):
         # equality part 2
         finds += [['!=', '=='], ['&&'], ['||']]
         # list push and pop
-        finds += [['->','<-']]
+        finds += [['->', '<-']]
         # set
         finds += [['-=', '+=', '/=', '**=', '*=', '=', '?=']]
+        # new op, force return and force stay
+        finds += [['~']]
         # its backwards
         finds = finds[::-1]
         # ob is operator break flag
@@ -110,7 +112,7 @@ def tree_line(code):
         if oper == 'error':
             errors.e_unk_oper(datas[types.index('oper')])
         # list of backwards operators
-        negitive = ['.','->']
+        negitive = ['.', '->']
         if oper not in negitive:
             oper_ind = datas.index(oper)
         else:
@@ -140,7 +142,7 @@ def tree_line(code):
 
 
 def tree(code, typ='newline'):
-    #raw token datsa
+    # raw token datsa
     datas = [i['data'] for i in code]
     # get pairs for each type
     pairs = {

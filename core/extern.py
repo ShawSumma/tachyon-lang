@@ -1,5 +1,5 @@
 from importlib.machinery import SourceFileLoader
-import tach_path
+from config import tach_path
 
 
 def py(path):
